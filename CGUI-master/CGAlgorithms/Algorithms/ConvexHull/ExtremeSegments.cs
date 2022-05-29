@@ -34,7 +34,7 @@ namespace CGAlgorithms.Algorithms.ConvexHull
 
                                 // var s = HelperMethods.CheckTurn(v1, v2);
 
-                                if (! HelperMethods.CheckTurn(v1, v2).Equals(Enums.TurnType.Left))
+                                if ( HelperMethods.CheckTurn(v1, v2).Equals(Enums.TurnType.Right))
                                 {
 
                                     extreme = 0;
@@ -43,7 +43,20 @@ namespace CGAlgorithms.Algorithms.ConvexHull
 
                                 }
 
-                                 
+                                if (HelperMethods.CheckTurn(v1, v2).Equals(Enums.TurnType.Colinear))
+                                {
+                                    double phat_to_p_dist_II = Math.Sqrt((points[i].X - points[j].X) * (points[i].X - points[j].X) + (points[i].Y - points[j].Y) * (points[i].Y - points[j].Y));
+                                    double phat_to_target_dist_II = Math.Sqrt((points[k].X - points[j].X) * (points[k].X - points[j].X) + (points[k].Y - points[j].Y) * (points[k].Y - points[j].Y));
+                                    double p_to_target_II = Math.Sqrt((points[k].X - points[i].X) * (points[k].X - points[i].X) + (points[k].Y - points[i].Y) * (points[k].Y - points[i].Y));
+                                    
+                                    if ((phat_to_target_dist_II + p_to_target_II > phat_to_p_dist_II)) {
+
+                                        extreme = 0;
+                                        break;
+
+                                    }
+                                }
+
                             }
 
 
