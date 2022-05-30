@@ -82,9 +82,16 @@ namespace CGUtilities
             Point b = l.End.Vector(p);
             return HelperMethods.CheckTurn(a, b);
         }
+        public static Enums.TurnType CheckTurn(Point a, Point b , Point c)//added
+        {
+            Line l = new Line(a, b);
+            return HelperMethods.CheckTurn(l, c);
+        }
         public static Point GetVector(Line l)
         {
             return l.Start.Vector(l.End);
         }
+
+        
     }
 }
