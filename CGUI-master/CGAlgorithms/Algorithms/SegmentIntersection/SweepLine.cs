@@ -68,8 +68,7 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
 
         OrderedSet<element> sweep_line;
         OrderedSet<Event> events;
-        List<Line> inputs_line;
-        List<Line> inputs_line_copy;
+        List<Line> input_lines;
         List<Point> intersections;
         Event current;
 
@@ -77,8 +76,7 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
         {
             sweep_line = new OrderedSet<element>(new Comparison<element>(CompareEventsY));
             events = new OrderedSet<Event>(new Comparison<Event>(CompareEventsX));
-            inputs_line = new List<Line>();
-            inputs_line_copy = new List<Line>();
+            input_lines = new List<Line>(); //original
 
             intersections = new List<Point>();
 
@@ -114,20 +112,27 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
         public int CompareEventsY(element e1, element e2)
         {
             if (e1.line.Start.Y < e2.line.Start.Y)
+                return -1;
+            else if (e1.line.Start.Y > e2.line.Start.Y)
                 return 1;
             else if (e1.line.Start.Y == e2.line.Start.Y)
             {
-                if (e1.line.Start.X < e2.line.Start.X) return -1;
-                else if (e1.line.Start.X > e2.line.Start.X) return 1;
+
+                if (e1.line.Start.X < e2.line.Start.X)
+                    return -1;
+                else if (e1.line.Start.X > e2.line.Start.X)
+                    return 1;
                 else
                 {
-                    //check on end point
                     if (e1.line.End.Y < e2.line.End.Y)
                         return -1;
                     else if (e1.line.End.Y == e2.line.End.Y)
                     {
-                        if (e1.line.End.X < e2.line.End.X) return -1;
-                        else if (e1.line.End.X > e2.line.End.X) return 1;
+                        if (e1.line.End.X < e2.line.End.X)
+                            return -1;
+                        else if (e1.line.End.X > e2.line.End.X)
+                            return 1;
+
                         else return 0;
 
                     }
@@ -135,8 +140,9 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
                         return 1;
                 }
             }
-            else
-                return -1;
+
+
+            return -10000;
         }
 
         public int CompareEventsX(Event p1, Event p2)
@@ -144,22 +150,28 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
 
             if (p1.point.X < p2.point.X)
                 return -1;
-            else if (p1.point.X == p2.point.X)
-            {
-                if (p1.point.Y < p2.point.Y) return -1;
-                else if (p1.point.Y > p2.point.Y) return 1;
-                else return 0;
-            }
-            else
+            else if (p1.point.X > p2.point.X)
                 return 1;
+            else
+            {
+                if (p1.point.Y < p2.point.Y)
+                    return -1;
+                else if (p1.point.Y > p2.point.Y)
+                    return 1;
+
+                else
+                    return 0;
+            }
+
+
         }
 
         void IntializeEvents()
         {
-            for (int i = 0; i < inputs_line.Count; i++)
+            for (int i = 0; i < input_lines.Count; i++)
             {
-                events.Add(new Event((Point)inputs_line[i].Start.Clone(), "S", (Line)inputs_line[i].Clone(), null, i, -1));
-                events.Add(new Event((Point)inputs_line[i].End.Clone(), "E", (Line)inputs_line[i].Clone(), null, i, -1));
+                events.Add(new Event((Point)input_lines[i].Start.Clone(), "S", (Line)input_lines[i].Clone(), null, i, -1));
+                events.Add(new Event((Point)input_lines[i].End.Clone(), "E", (Line)input_lines[i].Clone(), null, i, -1));
 
             }
 
@@ -174,14 +186,11 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
                 if (lines[i].End.X < lines[i].Start.X)
                 {
 
-                    inputs_line.Add(new Line((Point)lines[i].End.Clone(), (Point)lines[i].Start.Clone()));
-                    inputs_line_copy.Add(new Line((Point)lines[i].End.Clone(), (Point)lines[i].Start.Clone()));
+                    input_lines.Add(new Line((Point)lines[i].End.Clone(), (Point)lines[i].Start.Clone()));
                 }
                 else
                 {
-
-                    inputs_line.Add(new Line((Point)lines[i].Start.Clone(), (Point)lines[i].End.Clone()));
-                    inputs_line_copy.Add(new Line((Point)lines[i].Start.Clone(), (Point)lines[i].End.Clone()));
+                    input_lines.Add(new Line((Point)lines[i].Start.Clone(), (Point)lines[i].End.Clone()));
                 }
             }
 
@@ -235,21 +244,21 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
         void HandleStart(Event current_event)
         {
 
-            sweep_line.Add((element)new element(current_event.line_I_index, (Line)inputs_line_copy[current_event.line_I_index]));
+            sweep_line.Add((element)new element(current_event.line_I_index, (Line)input_lines[current_event.line_I_index]));
 
             //get prev and next in the sweep line 
-            element prev = sweep_line.DirectUpperAndLower((element)new element(current_event.line_I_index, (Line)inputs_line_copy[current_event.line_I_index])).Value;
-            element next = sweep_line.DirectUpperAndLower((element)new element(current_event.line_I_index, (Line)inputs_line_copy[current_event.line_I_index])).Key;
+            element prev = sweep_line.DirectUpperAndLower((element)new element(current_event.line_I_index, (Line)input_lines[current_event.line_I_index])).Value;
+            element next = sweep_line.DirectUpperAndLower((element)new element(current_event.line_I_index, (Line)input_lines[current_event.line_I_index])).Key;
 
             if (prev != null)
             {
 
-                Point prev_intersection = Intersection_point((Line)inputs_line[current_event.line_I_index].Clone(), (Line)inputs_line[prev.index].Clone());
+                Point prev_intersection = Intersection_point((Line)input_lines[current_event.line_I_index].Clone(), (Line)input_lines[prev.index].Clone());
 
                 if (prev_intersection != null)
                 {
 
-                    Event intersection = new Event((Point)prev_intersection.Clone(), "I", (Line)inputs_line_copy[current_event.line_I_index], (Line)inputs_line_copy[prev.index], current_event.line_I_index, prev.index);
+                    Event intersection = new Event((Point)prev_intersection.Clone(), "I", (Line)input_lines[current_event.line_I_index], (Line)input_lines[prev.index], current_event.line_I_index, prev.index);
 
                     events.Add((Event)intersection.Clone());
 
@@ -263,13 +272,13 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
             if (next != null)
             {
 
-                Point next_intersection = Intersection_point((Line)inputs_line[current_event.line_I_index].Clone(), (Line)inputs_line[next.index].Clone());
+                Point next_intersection = Intersection_point((Line)input_lines[current_event.line_I_index].Clone(), (Line)input_lines[next.index].Clone());
 
 
                 if (next_intersection != null)
                 {
 
-                    Event intersection = new Event((Point)next_intersection.Clone(), "I", (Line)inputs_line_copy[current_event.line_I_index], (Line)inputs_line_copy[next.index], current_event.line_I_index, next.index);
+                    Event intersection = new Event((Point)next_intersection.Clone(), "I", (Line)input_lines[current_event.line_I_index], (Line)input_lines[next.index], current_event.line_I_index, next.index);
 
                     events.Add((Event)intersection.Clone());
 
@@ -285,20 +294,20 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
         {
 
 
-            element target = (element)new element(current_event.line_I_index, (Line)inputs_line_copy[current_event.line_I_index]); 
+            element target = (element)new element(current_event.line_I_index, (Line)input_lines[current_event.line_I_index]);
 
             element prev = sweep_line.DirectUpperAndLower((element)target.Clone()).Value;
             element next = sweep_line.DirectUpperAndLower((element)target.Clone()).Key;
 
-            if (!(prev == null || next == null))
+            if ((prev != null) && (next != null))
             {
 
-                Point intersection_point = Intersection_point((Line)inputs_line[next.index].Clone(), (Line)inputs_line[prev.index].Clone());
+                Point intersection_point = Intersection_point((Line)input_lines[next.index].Clone(), (Line)input_lines[prev.index].Clone());
 
                 if (intersection_point != null)
                 {
 
-                    Event intersection = new Event((Point)intersection_point.Clone(), "I", (Line)inputs_line_copy[prev.index], (Line)inputs_line_copy[next.index], prev.index, next.index);
+                    Event intersection = new Event((Point)intersection_point.Clone(), "I", (Line)input_lines[prev.index], (Line)input_lines[next.index], prev.index, next.index);
 
 
                     events.Add((Event)intersection.Clone());
@@ -306,7 +315,6 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
                     intersections.Add((Point)intersection_point.Clone());
 
                 }
-
 
             }
 
@@ -317,75 +325,61 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
         void HandleIntersection(Event current_event)
         {
 
-            Line l1 = (Line)inputs_line_copy[current_event.line_I_index].Clone();
-            Line l2 = (Line)inputs_line_copy[current_event.line_II_index].Clone();
+            Line lower = (Line)input_lines[current_event.line_I_index].Clone();
+            Line higher = (Line)input_lines[current_event.line_II_index].Clone();
 
+            element e_lower = new element(current_event.line_I_index, lower);
+            element e_higher = new element(current_event.line_II_index, higher);
 
-
-
-            sweep_line.Remove(new element(current_event.line_I_index, l1));
-            sweep_line.Remove(new element(current_event.line_II_index, l2));
-
-
-            sweep_line.Add(new element(current_event.line_I_index, new Line(current_event.point, l1.End)));
-            sweep_line.Add(new element(current_event.line_II_index, new Line(current_event.point, l2.End)));
-
-
-            inputs_line_copy[current_event.line_I_index].Start = current_event.point;
-            inputs_line_copy[current_event.line_II_index].Start = current_event.point;
-
-
-            element e1 = new element(current_event.line_I_index, new Line(current_event.point, l1.End));
-            element e2 = new element(current_event.line_II_index, new Line(current_event.point, l2.End));
-
-            int index_1 = sweep_line.IndexOf(e1);
-            int index_2 = sweep_line.IndexOf(e2);
+            int index_lower = sweep_line.IndexOf(e_lower);
+            int index_higher = sweep_line.IndexOf(e_higher);
 
 
             element prev;
             element next;
 
-            if (index_1 < index_2)
+            if (index_lower < index_higher)
             {
 
-                next = sweep_line.DirectUpperAndLower(e2).Key;
-                prev = sweep_line.DirectUpperAndLower(e1).Value;      
+                next = sweep_line.DirectUpperAndLower(e_higher).Key;
+                prev = sweep_line.DirectUpperAndLower(e_lower).Value;
 
             }
             else
             {
 
-             
-
-
-                Line tmp = l2;
-                l2 = l1;
-                l1 = tmp;
+                Line tmp = higher;
+                higher = lower;
+                lower = tmp;
 
                 int tmpi = current_event.line_I_index;
                 current_event.line_I_index = current_event.line_II_index;
                 current_event.line_II_index = tmpi;
 
 
-                element temp = (element)e2.Clone(); 
-                e2 = (element)e1.Clone();
-                e1 = (element)temp.Clone(); 
+                Line tmp_line = current_event.line_I;
+                current_event.line_I = current_event.line_II;
+                current_event.line_II = tmp_line;
+
+                element temp = (element)e_higher.Clone();
+                e_higher = (element)e_lower.Clone();
+                e_lower = (element)temp.Clone();
 
 
-                next = sweep_line.DirectUpperAndLower(e2).Key;
-                prev = sweep_line.DirectUpperAndLower(e1).Value;
+                next = sweep_line.DirectUpperAndLower(e_higher).Key;
+                prev = sweep_line.DirectUpperAndLower(e_lower).Value;
             }
 
 
             if (prev != null)
             {
 
-                Point prev_intersection = Intersection_point((Line)inputs_line[current_event.line_I_index].Clone(), (Line)inputs_line[prev.index].Clone());
+                Point prev_intersection = Intersection_point(higher, (Line)input_lines[prev.index].Clone());
 
                 if (prev_intersection != null)
                 {
 
-                    Event intersection = new Event((Point)prev_intersection.Clone(), "I", (Line)l1.Clone(), (Line)inputs_line_copy[prev.index], current_event.line_I_index, prev.index);
+                    Event intersection = new Event((Point)prev_intersection.Clone(), "I", (Line)higher.Clone(), (Line)input_lines[prev.index], current_event.line_II_index, prev.index);
 
 
                     events.Add((Event)intersection.Clone());
@@ -400,13 +394,13 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
             if (next != null)
             {
 
-                Point next_intersection = Intersection_point((Line)inputs_line[current_event.line_II_index].Clone(), (Line)inputs_line[next.index].Clone());
+                Point next_intersection = Intersection_point(lower, (Line)input_lines[next.index].Clone());
 
 
                 if (next_intersection != null)
                 {
 
-                    Event intersection = new Event((Point)next_intersection.Clone(), "I", (Line)l2.Clone(), (Line)inputs_line_copy[next.index], current_event.line_II_index, next.index);
+                    Event intersection = new Event((Point)next_intersection.Clone(), "I", (Line)lower.Clone(), (Line)input_lines[next.index], current_event.line_I_index, next.index);
 
                     events.Add((Event)intersection.Clone());
 
@@ -415,7 +409,14 @@ namespace CGAlgorithms.Algorithms.SegmentIntersection
                 }
             }
 
-           
+            sweep_line.Remove(new element(current_event.line_I_index, lower));
+            sweep_line.Remove(new element(current_event.line_II_index, higher));
+
+            input_lines[current_event.line_I_index].Start = current_event.point;
+            input_lines[current_event.line_II_index].Start = current_event.point;
+
+            sweep_line.Add(new element(current_event.line_I_index, new Line(current_event.point, lower.End)));
+            sweep_line.Add(new element(current_event.line_II_index, new Line(current_event.point, higher.End)));
         }
 
 
